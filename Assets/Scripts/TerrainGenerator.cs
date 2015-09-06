@@ -13,63 +13,89 @@ public class TerrainGenerator : MonoBehaviour
 		Sand = 4
 	}
 
-	public int MapSize;
+	public float CliffFadeStartAngle;
+	public float CliffFadeStopAngle;
 
+	private AbstractHeightmap m_heightmap;
+	private float[,,] m_alphamap;
+
+	private Terrain m_terrain;
+	private TerrainData m_terrainData;
+
+	void Start ()
+	{
+
+	}
 
 	void Awake ()
 	{
+		m_terrain = Terrain.activeTerrain;
+		m_terrainData = m_terrain.terrainData;
 		Regenerate ();
 	}
 
 	public void Regenerate ()
 	{
-		float[,] heights = generateHeightmap (MapSize, 0.1f, 0.6f);
-		Terrain.activeTerrain.terrainData.SetHeights (0, 0, heights);
-		
-		
-		float[,,] alphas = new float[MapSize, MapSize, System.Enum.GetValues (typeof(TerrainTexture)).Length];
-		for (int y = 0; y < MapSize; ++y) {
-			for (int x = 0; x < MapSize; ++x) {
-				alphas [y, x, (int)TerrainTexture.Grass] = Mathf.Clamp (3.0f - Mathf.Abs (10.0f * heights [y, x] - 5.0f), 0.0f, 1.0f);
-				alphas [y, x, (int)TerrainTexture.Cliff] = 0;
-				alphas [y, x, (int)TerrainTexture.Mud] = 0;
-				alphas [y, x, (int)TerrainTexture.Rock] = Mathf.Clamp (-7.0f + 10.0f * heights [y, x], 0.0f, 1.0f);
-				alphas [y, x, (int)TerrainTexture.Sand] = Mathf.Clamp (3.0f - 10.0f * heights [y, x], 0.0f, 1.0f);
-				
-			}
-		}
-		
-		Terrain.activeTerrain.terrainData.SetAlphamaps (0, 0, alphas);
+		generateHeightmap ();
+		m_terrainData.SetHeights (0, 0, m_heightmap.getHeights ());
+
+		generateAlphamap ();
+		m_terrainData.SetAlphamaps (0, 0, m_alphamap);
 	}
 
 	
-	private float[,] generateHeightmap (int heightmapResolution, float scale, float cragStartAltitude)
+	private void generateHeightmap ()
 	{
-		float height, cragHeight;
-		float[,] heights = new float[heightmapResolution, heightmapResolution];
+		DiamondSquareHeightmap map = new DiamondSquareHeightmap (m_terrainData.heightmapResolution);
 
-		DiamondSquareHeightmap baseMap = new DiamondSquareHeightmap (heightmapResolution);
 		//Set some seed values for the map:
-		// - Force a mountain in the middle
-		baseMap.SetSeedValue (baseMap.size / 2, baseMap.size / 2, 1.0f);
-
-		// - Force sea around the outside.
-		for (int coordinate = 0; coordinate < baseMap.size; ++coordinate) {
-			baseMap.SetSeedValue (coordinate, 0, 0.0f);
-			baseMap.SetSeedValue (coordinate, baseMap.size, 0.0f);
-			baseMap.SetSeedValue (0, coordinate, 0.0f);
-			baseMap.SetSeedValue (baseMap.size, coordinate, 0.0f);
-		}
-		baseMap.generate ();
-
-		for (int y = 0; y < heightmapResolution; ++y) {
-			for (int x = 0; x < heightmapResolution; ++x) {
-				height = baseMap.getHeightAt (x, y);
-				heights [y, x] = Mathf.Clamp (height, 0.0f, 1.0f);
+		int quarterSize = (map.size - 1) / 4;
+		// - Set some random heights in the middle of the map
+		for (int x = 1; x <= 3; ++x) {
+			for (int y = 1; y <= 3; ++y) {
+				map.SetSeedValue (x * quarterSize, y * quarterSize, Random.value);
 			}
 		}
 
-		return heights;
+		// - Force sea around the outside.
+		for (int coordinate = 0; coordinate < map.size; ++coordinate) {
+			map.SetSeedValue (coordinate, 0, 0.0f);
+			map.SetSeedValue (coordinate, map.size - 1, 0.0f);
+			map.SetSeedValue (0, coordinate, 0.0f);
+			map.SetSeedValue (map.size - 1, coordinate, 0.0f);
+		}
+		map.generate ();
+
+		m_heightmap = map;
+	}
+
+	private void generateAlphamap ()
+	{
+
+
+		m_alphamap = new float[m_terrainData.alphamapWidth, m_terrainData.alphamapHeight, m_terrainData.alphamapLayers];
+		float normX, normY, steepness, cliffAlpha, nonCliffAlpha;
+		for (int y = 0; y < m_terrainData.alphamapHeight; ++y) {
+			for (int x = 0; x < m_terrainData.alphamapWidth; ++x) {
+
+				//Calculate normalised x and y co-ordinates, and use them to get the steepness of the terrain at this point.
+				normX = x * 1f / (m_terrainData.alphamapWidth - 1);
+				normY = y * 1f / (m_terrainData.alphamapHeight - 1);
+				steepness = m_terrainData.GetSteepness (normX, normY);
+
+				//Use steepness to calculate the alpha of the cliff texture.
+				cliffAlpha = (steepness - CliffFadeStartAngle) / (CliffFadeStopAngle - CliffFadeStartAngle);
+				cliffAlpha = Mathf.Clamp (cliffAlpha, 0f, 1f);
+				m_alphamap [y, x, (int)TerrainTexture.Cliff] = cliffAlpha;
+				nonCliffAlpha = 1 - cliffAlpha;
+
+				m_alphamap [y, x, (int)TerrainTexture.Grass] = nonCliffAlpha * Mathf.Clamp (3.0f - Mathf.Abs (10.0f * m_heightmap.getHeightAt (x, y) - 5.0f), 0.0f, 1.0f);
+				m_alphamap [y, x, (int)TerrainTexture.Mud] = 0.0f;
+				m_alphamap [y, x, (int)TerrainTexture.Rock] = nonCliffAlpha * Mathf.Clamp (-7.0f + 10.0f * m_heightmap.getHeightAt (x, y), 0.0f, 1.0f);
+				m_alphamap [y, x, (int)TerrainTexture.Sand] = nonCliffAlpha * Mathf.Clamp (3.0f - 10.0f * m_heightmap.getHeightAt (x, y), 0.0f, 1.0f);
+				
+			}
+		}
 	}
 
 }

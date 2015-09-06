@@ -88,8 +88,13 @@ public class DiamondSquareHeightmap : AbstractHeightmap
 
 	protected override int getRealSize (int newSize)
 	{
-		int realSize = (int)System.Math.Pow (2, System.Math.Ceiling (System.Math.Log (newSize, 2))) + 1;
-		return realSize;
+		//If the provided size is already one greater than an integer power of two, then use the provided size.
+		if (((newSize - 1) & (newSize - 2)) == 0) {
+			return newSize;
+		}
+
+		//Otherwise, return the next largest number of the form 2^n + 1.
+		return (int)System.Math.Pow (2, System.Math.Ceiling (System.Math.Log (newSize, 2))) + 1;
 	}
 
 	public void SetSeedValue (int x, int y, float value)
