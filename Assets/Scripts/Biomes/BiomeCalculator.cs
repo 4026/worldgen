@@ -27,13 +27,19 @@ public class BiomeCalculator
 	{
 		//Initialise the biome definitions
 		m_biomeDefinitions = new BiomeType[6, 6] {
-		//  Dry																										Wet
-			{BiomeType.Alpine, BiomeType.Alpine, BiomeType.Alpine, BiomeType.Alpine, BiomeType.Alpine, BiomeType.Alpine}, //Cold
-			{BiomeType.Desert, BiomeType.Alpine, BiomeType.Alpine, BiomeType.Alpine, BiomeType.Alpine, BiomeType.Alpine},
-			{BiomeType.Desert, BiomeType.Desert, BiomeType.Plains, BiomeType.Plains, BiomeType.Plains, BiomeType.Swamp},
-			{BiomeType.Desert, BiomeType.Desert, BiomeType.Plains, BiomeType.Plains, BiomeType.Plains, BiomeType.Swamp},
-			{BiomeType.Desert, BiomeType.Desert, BiomeType.Plains, BiomeType.Plains, BiomeType.Swamp, BiomeType.Swamp},
-			{BiomeType.Desert, BiomeType.Desert, BiomeType.Plains, BiomeType.Plains, BiomeType.Swamp, BiomeType.Swamp},   //Hot
+			{BiomeType.Taiga, BiomeType.Taiga, BiomeType.Snow, BiomeType.Snow, BiomeType.Snow, BiomeType.Snow}, 		  				
+			{BiomeType.Taiga, BiomeType.Taiga, BiomeType.Snow, BiomeType.Snow, BiomeType.Snow, BiomeType.Snow}, 
+			{
+				BiomeType.ColdDesert,
+				BiomeType.Plains,
+				BiomeType.Plains,
+				BiomeType.ColdForest,
+				BiomeType.ColdForest,
+				BiomeType.Swamp
+			},
+			{BiomeType.ColdDesert, BiomeType.Plains, BiomeType.Plains, BiomeType.Forest, BiomeType.Forest, BiomeType.Swamp},
+			{BiomeType.Desert, BiomeType.Plains, BiomeType.Plains, BiomeType.Forest, BiomeType.Forest, BiomeType.Swamp},
+			{BiomeType.Desert, BiomeType.Desert, BiomeType.Plains, BiomeType.Jungle, BiomeType.Jungle, BiomeType.Jungle}
 		};
 	}
 

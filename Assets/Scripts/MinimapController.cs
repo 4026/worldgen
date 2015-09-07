@@ -30,7 +30,7 @@ public class MinimapController : MonoBehaviour
 				pixels [y * m_biomeGraph.width + x] = new Color (
 					biomeWeights [(int)BiomeType.Desert],
 					biomeWeights [(int)BiomeType.Plains], 
-					biomeWeights [(int)BiomeType.Alpine]
+					biomeWeights [(int)BiomeType.Snow]
 				);
 			}
 		}

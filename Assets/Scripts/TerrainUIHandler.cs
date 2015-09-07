@@ -18,7 +18,7 @@ public class TerrainUIHandler : MonoBehaviour, IScrollHandler, IPointerClickHand
 			"Plains: " + biomeWeights [(int)BiomeType.Plains] + ", " +
 			"Desert: " + biomeWeights [(int)BiomeType.Desert] + ", " +
 			"Swamp: " + biomeWeights [(int)BiomeType.Swamp] + ", " +
-			"Alpine: " + biomeWeights [(int)BiomeType.Alpine]
+			"Alpine: " + biomeWeights [(int)BiomeType.Snow]
 		);
 	}
 

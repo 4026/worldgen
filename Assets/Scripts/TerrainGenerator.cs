@@ -10,7 +10,12 @@ public class TerrainGenerator : MonoBehaviour
 		Rock = 1,
 		Mud = 2,
 		Cliff = 3,
-		Sand = 4
+		Sand = 4,
+		Forest = 5,
+		Snow = 6,
+		PineForest = 7,
+		ParchedGround = 8,
+		Jungle = 9
 	}
 
 	public float CliffFadeStartAngle;
@@ -106,8 +111,13 @@ public class TerrainGenerator : MonoBehaviour
 				//Assign texture alphas based on biome weights
 				m_alphamap [y, x, (int)TerrainTexture.Grass] = nonCliffAlpha * biomeWeights [(int)BiomeType.Plains];
 				m_alphamap [y, x, (int)TerrainTexture.Mud] = nonCliffAlpha * biomeWeights [(int)BiomeType.Swamp];
-				m_alphamap [y, x, (int)TerrainTexture.Rock] = nonCliffAlpha * biomeWeights [(int)BiomeType.Alpine];
+				m_alphamap [y, x, (int)TerrainTexture.Rock] = nonCliffAlpha * biomeWeights [(int)BiomeType.Taiga];
 				m_alphamap [y, x, (int)TerrainTexture.Sand] = nonCliffAlpha * biomeWeights [(int)BiomeType.Desert];
+				m_alphamap [y, x, (int)TerrainTexture.ParchedGround] = nonCliffAlpha * biomeWeights [(int)BiomeType.ColdDesert];
+				m_alphamap [y, x, (int)TerrainTexture.Forest] = nonCliffAlpha * biomeWeights [(int)BiomeType.Forest];
+				m_alphamap [y, x, (int)TerrainTexture.PineForest] = nonCliffAlpha * biomeWeights [(int)BiomeType.ColdForest];
+				m_alphamap [y, x, (int)TerrainTexture.Jungle] = nonCliffAlpha * biomeWeights [(int)BiomeType.Jungle];
+				m_alphamap [y, x, (int)TerrainTexture.Snow] = nonCliffAlpha * biomeWeights [(int)BiomeType.Snow];
 			}
 		}
 	}
@@ -123,7 +133,9 @@ public class TerrainGenerator : MonoBehaviour
 
 	public float[] GetBiomeWeightsAtHeightmapPos (int x, int y)
 	{
-		float temperature = 1 - m_heightmap.getValueAt (x, y);
+		float heightAboveSeaLevel = Mathf.Clamp ((m_heightmap.getValueAt (x, y) - 0.2f) / 0.8f, 0f, 1f);
+		float latitude = Mathf.Clamp (y / (float)m_heightmap.size, 0f, 1f);
+		float temperature = (latitude + 1 - heightAboveSeaLevel) / 2f;
 		float precipitation = m_rainmap.getValueAt (x, y);
 		return BiomeCalculator.Instance.getBiomeWeights (temperature, precipitation);
 	}
