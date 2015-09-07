@@ -16,7 +16,8 @@ public class TerrainGenerator : MonoBehaviour
 	public float CliffFadeStartAngle;
 	public float CliffFadeStopAngle;
 
-	private AbstractHeightmap m_heightmap;
+	private AbstractValueMap m_heightmap;
+	private AbstractValueMap m_rainmap;
 	private float[,,] m_alphamap;
 
 	private Terrain m_terrain;
@@ -36,8 +37,14 @@ public class TerrainGenerator : MonoBehaviour
 
 	public void Regenerate ()
 	{
+		MinimapController minimap = FindObjectOfType<MinimapController> ();
+
 		generateHeightmap ();
-		m_terrainData.SetHeights (0, 0, m_heightmap.getHeights ());
+		m_terrainData.SetHeights (0, 0, m_heightmap.getValues ());
+		minimap.setHeightmap (m_heightmap.getTexture ());
+
+		generateRainMap ();
+		minimap.setRainmap (m_rainmap.getTexture ());
 
 		generateAlphamap ();
 		m_terrainData.SetAlphamaps (0, 0, m_alphamap);
@@ -46,7 +53,7 @@ public class TerrainGenerator : MonoBehaviour
 	
 	private void generateHeightmap ()
 	{
-		DiamondSquareHeightmap map = new DiamondSquareHeightmap (m_terrainData.heightmapResolution);
+		DiamondSquareNoiseMap map = new DiamondSquareNoiseMap (m_terrainData.heightmapResolution);
 
 		//Set some seed values for the map:
 		int quarterSize = (map.size - 1) / 4;
@@ -69,10 +76,14 @@ public class TerrainGenerator : MonoBehaviour
 		m_heightmap = map;
 	}
 
+	private void generateRainMap ()
+	{
+		m_rainmap = new PerlinNoiseMap (m_terrainData.heightmapResolution, 0.2f);
+		m_rainmap.generate ();
+	}
+
 	private void generateAlphamap ()
 	{
-
-
 		m_alphamap = new float[m_terrainData.alphamapWidth, m_terrainData.alphamapHeight, m_terrainData.alphamapLayers];
 		float normX, normY, steepness, cliffAlpha, nonCliffAlpha;
 		for (int y = 0; y < m_terrainData.alphamapHeight; ++y) {
@@ -89,13 +100,31 @@ public class TerrainGenerator : MonoBehaviour
 				m_alphamap [y, x, (int)TerrainTexture.Cliff] = cliffAlpha;
 				nonCliffAlpha = 1 - cliffAlpha;
 
-				m_alphamap [y, x, (int)TerrainTexture.Grass] = nonCliffAlpha * Mathf.Clamp (3.0f - Mathf.Abs (10.0f * m_heightmap.getHeightAt (x, y) - 5.0f), 0.0f, 1.0f);
-				m_alphamap [y, x, (int)TerrainTexture.Mud] = 0.0f;
-				m_alphamap [y, x, (int)TerrainTexture.Rock] = nonCliffAlpha * Mathf.Clamp (-7.0f + 10.0f * m_heightmap.getHeightAt (x, y), 0.0f, 1.0f);
-				m_alphamap [y, x, (int)TerrainTexture.Sand] = nonCliffAlpha * Mathf.Clamp (3.0f - 10.0f * m_heightmap.getHeightAt (x, y), 0.0f, 1.0f);
-				
+				//Get biome weights for the location.
+				float[] biomeWeights = GetBiomeWeightsAtHeightmapPos (x, y);
+
+				//Assign texture alphas based on biome weights
+				m_alphamap [y, x, (int)TerrainTexture.Grass] = nonCliffAlpha * biomeWeights [(int)BiomeType.Plains];
+				m_alphamap [y, x, (int)TerrainTexture.Mud] = nonCliffAlpha * biomeWeights [(int)BiomeType.Swamp];
+				m_alphamap [y, x, (int)TerrainTexture.Rock] = nonCliffAlpha * biomeWeights [(int)BiomeType.Alpine];
+				m_alphamap [y, x, (int)TerrainTexture.Sand] = nonCliffAlpha * biomeWeights [(int)BiomeType.Desert];
 			}
 		}
 	}
 
+	public Vector2 GetHeightmapPosFromWorldPos (Vector3 worldPos)
+	{
+		Vector3 localPos = worldPos - transform.position;
+		return new Vector2 (
+			Mathf.Floor (localPos.x * m_terrainData.heightmapWidth / m_terrainData.size.x),
+			Mathf.Floor (localPos.z * m_terrainData.heightmapHeight / m_terrainData.size.z)
+		);
+	}
+
+	public float[] GetBiomeWeightsAtHeightmapPos (int x, int y)
+	{
+		float temperature = 1 - m_heightmap.getValueAt (x, y);
+		float precipitation = m_rainmap.getValueAt (x, y);
+		return BiomeCalculator.Instance.getBiomeWeights (temperature, precipitation);
+	}
 }

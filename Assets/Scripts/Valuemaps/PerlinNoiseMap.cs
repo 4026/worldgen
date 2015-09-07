@@ -1,11 +1,11 @@
 using UnityEngine;
 
-public class PerlinHeightmap : AbstractHeightmap
+public class PerlinNoiseMap : AbstractValueMap
 {
 	private float scale;
 	private Vector2 perlinBase;
 
-	public PerlinHeightmap (int newSize, float newScale) : base(newSize)
+	public PerlinNoiseMap (int newSize, float newScale) : base(newSize)
 	{
 		scale = newScale;
 		perlinBase = Random.insideUnitCircle * 100000;
@@ -21,7 +21,7 @@ public class PerlinHeightmap : AbstractHeightmap
 				perlinY = perlinBase.y + y / (size * scale);
 				perlinValue = Mathf.PerlinNoise (perlinX, perlinY);
 
-				m_heights [y, x] = perlinValue;
+				m_values [y, x] = Mathf.Clamp (perlinValue, 0f, 1f);
 			}
 		}
 	}

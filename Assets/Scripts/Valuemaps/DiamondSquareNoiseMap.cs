@@ -1,7 +1,7 @@
 using UnityEngine;
 using System.Collections.Generic;
 
-public class DiamondSquareHeightmap : AbstractHeightmap
+public class DiamondSquareNoiseMap : AbstractValueMap
 {
 	struct Point
 	{
@@ -77,7 +77,7 @@ public class DiamondSquareHeightmap : AbstractHeightmap
 	/// </summary>
 	private Dictionary<int, float> m_seedValues = new Dictionary<int, float> ();
 
-	public DiamondSquareHeightmap (int newSize) : base(newSize)
+	public DiamondSquareNoiseMap (int newSize) : base(newSize)
 	{
 		//By default, seed the four corners with a value of 0.5
 		SetSeedValue (0, 0, 0.5f);
@@ -126,7 +126,7 @@ public class DiamondSquareHeightmap : AbstractHeightmap
 					square = new Square (new Point (x, y), squareWidth);
 
 					//If the value for this square has already been set, move on.
-					if (m_heights [square.center.y, square.center.x] != -1.0f) {
+					if (m_values [square.center.y, square.center.x] != -1.0f) {
 						continue;
 					}
 
@@ -134,14 +134,14 @@ public class DiamondSquareHeightmap : AbstractHeightmap
 					totalValue = 0f;
 					for (int i = 0; i < 4; ++i) {
 						corner = square.corners [i];
-						totalValue += m_heights [corner.y, corner.x];
+						totalValue += m_values [corner.y, corner.x];
 					}
 
 					//Set center of square to mean value plus random value
 					mean = (totalValue / 4.0f);
 					randomValue = Random.Range (-randomScale, randomScale);
 					finalValue = Mathf.Clamp (mean + randomValue, 0.0f, 1.0f);
-					m_heights [square.center.y, square.center.x] = finalValue;
+					m_values [square.center.y, square.center.x] = finalValue;
 				}
 			}
 
@@ -150,7 +150,7 @@ public class DiamondSquareHeightmap : AbstractHeightmap
 				for (int y = (x + halfSquareWidth) % squareWidth; y < size - 1; y += squareWidth) {
 
 					//If the value for this diamond has already been set, move on.
-					if (m_heights [y, x] != -1.0f) {
+					if (m_values [y, x] != -1.0f) {
 						continue;
 					}
 
@@ -161,21 +161,21 @@ public class DiamondSquareHeightmap : AbstractHeightmap
 					totalValue = 0f;
 					for (int i = 0; i < 4; ++i) {
 						corner = diamond.corners [i];
-						totalValue += m_heights [corner.y, corner.x];
+						totalValue += m_values [corner.y, corner.x];
 					}
 					
 					//Set center of diamond to mean value plus random value
 					mean = (totalValue / 4.0f);
 					randomValue = Random.Range (-randomScale, randomScale);
 					finalValue = Mathf.Clamp (mean + randomValue, 0.0f, 1.0f);
-					m_heights [diamond.center.y, diamond.center.x] = finalValue;
+					m_values [diamond.center.y, diamond.center.x] = finalValue;
 
 					//Wrap values on the edges
 					if (x == 0) {
-						m_heights [y, size - 1] = finalValue;
+						m_values [y, size - 1] = finalValue;
 					}
 					if (y == 0) {
-						m_heights [size - 1, x] = finalValue;
+						m_values [size - 1, x] = finalValue;
 					}
 				}
 			}
@@ -196,9 +196,9 @@ public class DiamondSquareHeightmap : AbstractHeightmap
 			for (int y = 0; y < size; ++y) {
 				seedValueKey = y * size + x;
 				if (m_seedValues.ContainsKey (seedValueKey)) {
-					m_heights [y, x] = m_seedValues [seedValueKey];
+					m_values [y, x] = m_seedValues [seedValueKey];
 				} else {
-					m_heights [y, x] = -1.0f;
+					m_values [y, x] = -1.0f;
 				}
 			}
 		}
