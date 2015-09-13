@@ -3,17 +3,7 @@ using System.Collections.Generic;
 
 public class DiamondSquareNoiseMap : AbstractValueMap
 {
-	struct Point
-	{
-		public int x, y;
-		public Point (int newX, int newY)
-		{
-			x = newX;
-			y = newY;
-		}
-	}
-
-	struct Square
+    struct Square
 	{
 		public Point topLeft;
 		public int size;

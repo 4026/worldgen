@@ -29,14 +29,7 @@ public class BiomeCalculator
 		m_biomeDefinitions = new BiomeType[6, 6] {
 			{BiomeType.Taiga, BiomeType.Taiga, BiomeType.Snow, BiomeType.Snow, BiomeType.Snow, BiomeType.Snow}, 		  				
 			{BiomeType.Taiga, BiomeType.Taiga, BiomeType.Snow, BiomeType.Snow, BiomeType.Snow, BiomeType.Snow}, 
-			{
-				BiomeType.ColdDesert,
-				BiomeType.Plains,
-				BiomeType.Plains,
-				BiomeType.ColdForest,
-				BiomeType.ColdForest,
-				BiomeType.Swamp
-			},
+			{BiomeType.ColdDesert,BiomeType.Plains,BiomeType.Plains,BiomeType.ColdForest,BiomeType.ColdForest,BiomeType.Swamp},
 			{BiomeType.ColdDesert, BiomeType.Plains, BiomeType.Plains, BiomeType.Forest, BiomeType.Forest, BiomeType.Swamp},
 			{BiomeType.Desert, BiomeType.Plains, BiomeType.Plains, BiomeType.Forest, BiomeType.Forest, BiomeType.Swamp},
 			{BiomeType.Desert, BiomeType.Desert, BiomeType.Plains, BiomeType.Jungle, BiomeType.Jungle, BiomeType.Jungle}

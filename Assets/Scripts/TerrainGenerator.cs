@@ -18,13 +18,17 @@ public class TerrainGenerator : MonoBehaviour
 		Jungle = 9
 	}
 
+    //Parameters
 	public float CliffFadeStartAngle;
 	public float CliffFadeStopAngle;
+    public float SeaLevel;
 
-	private AbstractValueMap m_heightmap;
-	private AbstractValueMap m_rainmap;
-	private float[,,] m_alphamap;
+    //Data
+    public AbstractValueMap Heightmap;
+	public AbstractValueMap Rainmap;
+    public BiomeMap BiomeMap;
 
+    private float[,,] m_alphamap;
 	private Terrain m_terrain;
 	private TerrainData m_terrainData;
 
@@ -37,7 +41,7 @@ public class TerrainGenerator : MonoBehaviour
 	{
 		m_terrain = Terrain.activeTerrain;
 		m_terrainData = m_terrain.terrainData;
-		Regenerate ();
+        Regenerate();
 	}
 
 	public void Regenerate ()
@@ -45,18 +49,19 @@ public class TerrainGenerator : MonoBehaviour
 		MinimapController minimap = FindObjectOfType<MinimapController> ();
 
 		generateHeightmap ();
-		m_terrainData.SetHeights (0, 0, m_heightmap.getValues ());
-		minimap.setHeightmap (m_heightmap.getTexture ());
+		m_terrainData.SetHeights (0, 0, Heightmap.getValues ());
+		minimap.setHeightmap (Heightmap.getTexture ());
 
 		generateRainMap ();
-		minimap.setRainmap (m_rainmap.getTexture ());
+		minimap.setRainmap (Rainmap.getTexture ());
+
+        generateBiomeMap();
 
 		generateAlphamap ();
 		m_terrainData.SetAlphamaps (0, 0, m_alphamap);
 	}
 
-	
-	private void generateHeightmap ()
+    private void generateHeightmap ()
 	{
 		DiamondSquareNoiseMap map = new DiamondSquareNoiseMap (m_terrainData.heightmapResolution);
 
@@ -78,16 +83,21 @@ public class TerrainGenerator : MonoBehaviour
 		}
 		map.generate ();
 
-		m_heightmap = map;
+		Heightmap = map;
 	}
 
 	private void generateRainMap ()
 	{
-		m_rainmap = new PerlinNoiseMap (m_terrainData.heightmapResolution, 0.2f);
-		m_rainmap.generate ();
+		Rainmap = new PerlinNoiseMap (m_terrainData.heightmapResolution, 0.2f);
+		Rainmap.generate ();
 	}
 
-	private void generateAlphamap ()
+    private void generateBiomeMap()
+    {
+        BiomeMap = new BiomeMap(this);
+    }
+
+    private void generateAlphamap ()
 	{
 		m_alphamap = new float[m_terrainData.alphamapWidth, m_terrainData.alphamapHeight, m_terrainData.alphamapLayers];
 		float normX, normY, steepness, cliffAlpha, nonCliffAlpha;
@@ -105,38 +115,29 @@ public class TerrainGenerator : MonoBehaviour
 				m_alphamap [y, x, (int)TerrainTexture.Cliff] = cliffAlpha;
 				nonCliffAlpha = 1 - cliffAlpha;
 
-				//Get biome weights for the location.
-				float[] biomeWeights = GetBiomeWeightsAtHeightmapPos (x, y);
+				//Get biome data for the location.
+				BiomeMapPixel biomeData = BiomeMap.GetPixelAtPoint(x, y);
 
 				//Assign texture alphas based on biome weights
-				m_alphamap [y, x, (int)TerrainTexture.Grass] = nonCliffAlpha * biomeWeights [(int)BiomeType.Plains];
-				m_alphamap [y, x, (int)TerrainTexture.Mud] = nonCliffAlpha * biomeWeights [(int)BiomeType.Swamp];
-				m_alphamap [y, x, (int)TerrainTexture.Rock] = nonCliffAlpha * biomeWeights [(int)BiomeType.Taiga];
-				m_alphamap [y, x, (int)TerrainTexture.Sand] = nonCliffAlpha * biomeWeights [(int)BiomeType.Desert];
-				m_alphamap [y, x, (int)TerrainTexture.ParchedGround] = nonCliffAlpha * biomeWeights [(int)BiomeType.ColdDesert];
-				m_alphamap [y, x, (int)TerrainTexture.Forest] = nonCliffAlpha * biomeWeights [(int)BiomeType.Forest];
-				m_alphamap [y, x, (int)TerrainTexture.PineForest] = nonCliffAlpha * biomeWeights [(int)BiomeType.ColdForest];
-				m_alphamap [y, x, (int)TerrainTexture.Jungle] = nonCliffAlpha * biomeWeights [(int)BiomeType.Jungle];
-				m_alphamap [y, x, (int)TerrainTexture.Snow] = nonCliffAlpha * biomeWeights [(int)BiomeType.Snow];
+				m_alphamap [y, x, (int)TerrainTexture.Grass] = nonCliffAlpha * biomeData.GetBiomeWeight(BiomeType.Plains);
+				m_alphamap [y, x, (int)TerrainTexture.Mud] = nonCliffAlpha * biomeData.GetBiomeWeight(BiomeType.Swamp);
+				m_alphamap [y, x, (int)TerrainTexture.Rock] = nonCliffAlpha * biomeData.GetBiomeWeight(BiomeType.Taiga);
+				m_alphamap [y, x, (int)TerrainTexture.Sand] = nonCliffAlpha * biomeData.GetBiomeWeight(BiomeType.Desert);
+				m_alphamap [y, x, (int)TerrainTexture.ParchedGround] = nonCliffAlpha * biomeData.GetBiomeWeight(BiomeType.ColdDesert);
+				m_alphamap [y, x, (int)TerrainTexture.Forest] = nonCliffAlpha * biomeData.GetBiomeWeight(BiomeType.Forest);
+				m_alphamap [y, x, (int)TerrainTexture.PineForest] = nonCliffAlpha * biomeData.GetBiomeWeight(BiomeType.ColdForest);
+				m_alphamap [y, x, (int)TerrainTexture.Jungle] = nonCliffAlpha * biomeData.GetBiomeWeight(BiomeType.Jungle);
+				m_alphamap [y, x, (int)TerrainTexture.Snow] = nonCliffAlpha * biomeData.GetBiomeWeight(BiomeType.Snow);
 			}
 		}
 	}
 
-	public Vector2 GetHeightmapPosFromWorldPos (Vector3 worldPos)
+	public Point GetHeightmapPosFromWorldPos (Vector3 worldPos)
 	{
 		Vector3 localPos = worldPos - transform.position;
-		return new Vector2 (
-			Mathf.Floor (localPos.x * m_terrainData.heightmapWidth / m_terrainData.size.x),
-			Mathf.Floor (localPos.z * m_terrainData.heightmapHeight / m_terrainData.size.z)
+		return new Point (
+			Mathf.FloorToInt (localPos.x * m_terrainData.heightmapWidth / m_terrainData.size.x),
+			Mathf.FloorToInt (localPos.z * m_terrainData.heightmapHeight / m_terrainData.size.z)
 		);
-	}
-
-	public float[] GetBiomeWeightsAtHeightmapPos (int x, int y)
-	{
-		float heightAboveSeaLevel = Mathf.Clamp ((m_heightmap.getValueAt (x, y) - 0.2f) / 0.8f, 0f, 1f);
-		float latitude = Mathf.Clamp (y / (float)m_heightmap.size, 0f, 1f);
-		float temperature = (latitude + 1 - heightAboveSeaLevel) / 2f;
-		float precipitation = m_rainmap.getValueAt (x, y);
-		return BiomeCalculator.Instance.getBiomeWeights (temperature, precipitation);
 	}
 }
