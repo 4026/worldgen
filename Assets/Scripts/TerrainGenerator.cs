@@ -6,8 +6,8 @@ public class TerrainGenerator : MonoBehaviour
 
 	enum TerrainTexture
 	{
-		Grass = 0,
-		Rock = 1,
+		Seabed = 0,
+		Grass = 1,
 		Mud = 2,
 		Cliff = 3,
 		Sand = 4,
@@ -130,14 +130,14 @@ public class TerrainGenerator : MonoBehaviour
 				//Get biome data for the location.
 				BiomeMapPixel biomeData = BiomeMap.GetPixelAtPoint(x, y);
 
-				//Assign texture alphas based on biome weights
-				m_alphamap [y, x, (int)TerrainTexture.Grass] = nonCliffAlpha * biomeData.GetBiomeWeight(BiomeType.Plains);
+                //Assign texture alphas based on biome weights
+                m_alphamap[y, x, (int)TerrainTexture.Seabed] = nonCliffAlpha * biomeData.GetBiomeWeight(BiomeType.Ocean);
+                m_alphamap[y, x, (int)TerrainTexture.Grass] = nonCliffAlpha * biomeData.GetBiomeWeight(BiomeType.Plains);
 				m_alphamap [y, x, (int)TerrainTexture.Mud] = nonCliffAlpha * biomeData.GetBiomeWeight(BiomeType.Swamp);
-				m_alphamap [y, x, (int)TerrainTexture.Rock] = nonCliffAlpha * biomeData.GetBiomeWeight(BiomeType.Taiga);
 				m_alphamap [y, x, (int)TerrainTexture.Sand] = nonCliffAlpha * biomeData.GetBiomeWeight(BiomeType.Desert);
 				m_alphamap [y, x, (int)TerrainTexture.ParchedGround] = nonCliffAlpha * biomeData.GetBiomeWeight(BiomeType.ColdDesert);
 				m_alphamap [y, x, (int)TerrainTexture.Forest] = nonCliffAlpha * biomeData.GetBiomeWeight(BiomeType.Forest);
-				m_alphamap [y, x, (int)TerrainTexture.PineForest] = nonCliffAlpha * biomeData.GetBiomeWeight(BiomeType.ColdForest);
+				m_alphamap [y, x, (int)TerrainTexture.PineForest] = nonCliffAlpha * biomeData.GetBiomeWeight(BiomeType.Taiga);
 				m_alphamap [y, x, (int)TerrainTexture.Jungle] = nonCliffAlpha * biomeData.GetBiomeWeight(BiomeType.Jungle);
 				m_alphamap [y, x, (int)TerrainTexture.Snow] = nonCliffAlpha * biomeData.GetBiomeWeight(BiomeType.Snow);
 			}
@@ -152,4 +152,14 @@ public class TerrainGenerator : MonoBehaviour
 			Mathf.FloorToInt (localPos.z * m_terrainData.heightmapHeight / m_terrainData.size.z)
 		);
 	}
+
+    /// <summary>
+    /// Get a value between 1 and -1 representing the terrain's height above sea level at the specified point on the heightmap.
+    /// </summary>
+    /// <param name="pos"></param>
+    /// <returns></returns>
+    public float getHeightAboveSeaLevelAt(Point pos)
+    {
+        return Mathf.Clamp((Heightmap.getValueAt(pos) - SeaLevel) / (1 - SeaLevel), -1f, 1f);
+    }
 }

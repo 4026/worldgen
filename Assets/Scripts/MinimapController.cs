@@ -26,7 +26,7 @@ public class MinimapController : MonoBehaviour
 			for (int y = 0; y < m_biomeGraph.height; ++y) {
 				float temperature = x / (float)m_biomeGraph.width;
 				float precipitation = y / (float)m_biomeGraph.height;
-				float[] biomeWeights = BiomeCalculator.Instance.getBiomeWeights (temperature, precipitation);
+				float[] biomeWeights = BiomeCalculator.Instance.getBiomeWeights (temperature, precipitation, 1f);
 				pixels [y * m_biomeGraph.width + x] = new Color (
 					biomeWeights [(int)BiomeType.Desert],
 					biomeWeights [(int)BiomeType.Plains], 

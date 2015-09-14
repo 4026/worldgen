@@ -31,7 +31,12 @@ public abstract class AbstractValueMap
 		return m_values [y, x];
 	}
 
-	public Texture2D getTexture ()
+    public float getValueAt(Point pos)
+    {
+        return m_values[pos.y, pos.x];
+    }
+
+    public Texture2D getTexture ()
 	{
 		Texture2D texture = new Texture2D (size, size);
 		Color[] pixels = texture.GetPixels ();

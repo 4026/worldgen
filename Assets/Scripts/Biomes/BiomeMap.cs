@@ -15,11 +15,13 @@ public class BiomeMap
         m_data = new BiomeMapPixel[Size, Size];
 
         //Set biome weights for all pixels
+        Point position;
         for (int x = 0; x < Size; ++x)
         {
             for (int y = 0; y < Size; ++y)
             {
-                m_data[y, x] = new BiomeMapPixel(CalculateBiomeWeightsAtPoint(x, y));
+                position = new Point(x, y);
+                m_data[y, x] = new BiomeMapPixel(CalculateBiomeWeightsAtPoint(position));
             }
         }
 
@@ -84,13 +86,15 @@ public class BiomeMap
         return m_data[point.y, point.x];
     }
 
-    private float[] CalculateBiomeWeightsAtPoint(int x, int y)
+    private float[] CalculateBiomeWeightsAtPoint(Point position)
     {
-        float heightAboveSeaLevel = Mathf.Clamp((m_terrainData.Heightmap.getValueAt(x, y) - m_terrainData.SeaLevel) / (1 - m_terrainData.SeaLevel), 0f, 1f);
-        float latitude = Mathf.Clamp(y / (float) m_terrainData.Heightmap.size, 0f, 1f);
-        float temperature = (4 * latitude + 1 - heightAboveSeaLevel) / 5f;
-        float precipitation = m_terrainData.Rainmap.getValueAt(x, y);
-        return BiomeCalculator.Instance.getBiomeWeights(temperature, precipitation);
+        float heightAboveSeaLevel = m_terrainData.getHeightAboveSeaLevelAt(position);
+        float latitude = Mathf.Clamp(position.y / (float) m_terrainData.Heightmap.size, 0f, 1f);
+        float temperature = (4 * latitude + 1 - Mathf.Clamp(heightAboveSeaLevel, 0f, 1f)) / 5f;
+
+        float precipitation = m_terrainData.Rainmap.getValueAt(position);
+
+        return BiomeCalculator.Instance.getBiomeWeights(temperature, precipitation, heightAboveSeaLevel);
     }
 
 }

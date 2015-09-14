@@ -37,6 +37,11 @@ public class BiomeNamer
             m_biomeNameDefinitions[(int) biome] = new List<string>();
         }
 
+        //Ocean
+        m_biomeNameDefinitions[(int)BiomeType.Ocean].AddRange(new string[] {
+            "Ocean", "Sea"
+        });
+
         //Plains
         m_biomeNameDefinitions[(int)BiomeType.Plains].AddRange(new string[] {
             "Plain", "Steppe", "Grassland", "Prairie"
@@ -62,22 +67,17 @@ public class BiomeNamer
             "Glacier", "Drifts", "Plain", "Ice Shelf"
         });
 
-        //Taiga
-        m_biomeNameDefinitions[(int)BiomeType.Taiga].AddRange(new string[] {
-            "Taiga"
-        });
-
         //Forest
         m_biomeNameDefinitions[(int)BiomeType.Forest].AddRange(new string[] {
             "Forest", "Wood"
         });
 
         //Cold Forest
-        m_biomeNameDefinitions[(int)BiomeType.ColdForest].AddRange(new string[] {
-            "Forest", "Wood", "Pines"
+        m_biomeNameDefinitions[(int)BiomeType.Taiga].AddRange(new string[] {
+            "Forest", "Wood", "Pines", "Taiga"
         });
 
-        //Cold Forest
+        //Hot Forest
         m_biomeNameDefinitions[(int)BiomeType.Jungle].AddRange(new string[] {
             "Jungle", "Rainforest"
         });
