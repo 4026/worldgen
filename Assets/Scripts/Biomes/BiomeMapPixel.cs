@@ -50,7 +50,7 @@ public class BiomeMapPixel
         {
             if (GetBiomeWeight(biome) != 0)
             {
-                biomeData += String.Format("{0}: {1}, ", biome.ToString(), GetBiomeWeight(biome));
+                biomeData += String.Format("{0}: {1:f2}, ", biome.ToString(), GetBiomeWeight(biome));
             }
         }
 

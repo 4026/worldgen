@@ -24,6 +24,8 @@ public class BiomeMap
         }
 
         //Iterate through all pixels, setting their parent Biome
+        
+        Biome biome;
         for (int x = 0; x < Size; ++x)
         {
             for (int y = 0; y < Size; ++y)
@@ -35,31 +37,37 @@ public class BiomeMap
                 }
 
                 //Generate a new Biome object from the primary biome type of this pixel.
-                Biome biome = new Biome(m_data[y, x].GetPrimaryBiome());
+                biome = new Biome(m_data[y, x].GetPrimaryBiome());
 
                 //Flood fill the map with that biome.
                 floodFill(new Point(x, y), biome);
             }
         }
+        
     }
 
     private void floodFill(Point startPoint, Biome parentBiome)
     {
-        Queue<Point> q = new Queue<Point>();
-        q.Enqueue(startPoint);
+        Queue<Point> queue = new Queue<Point>();
+        HashSet<Point> queuedPoints = new HashSet<Point>();
+        queue.Enqueue(startPoint);
+        queuedPoints.Add(startPoint);
 
-        while (q.Count > 0)
+        Point currentPoint;
+        BiomeMapPixel currentPixel;
+        while (queue.Count > 0)
         {
-            Point currentPoint = q.Dequeue();
-            BiomeMapPixel currentPixel = m_data[currentPoint.y, currentPoint.x];
+            currentPoint = queue.Dequeue();
+            currentPixel = m_data[currentPoint.y, currentPoint.x];
             if (currentPixel.GetPrimaryBiome() == parentBiome.Type)
             {
                 currentPixel.ParentBiome = parentBiome;
                 foreach (Point neighbour in currentPoint.Neighbours)
                 {
-                    if (neighbour.IsInBounds(0, 0, Size, Size) && GetPixelAtPoint(neighbour).ParentBiome == null && !q.Contains(neighbour))
+                    if (neighbour.IsInBounds(0, 0, Size, Size) && GetPixelAtPoint(neighbour).ParentBiome == null && !queuedPoints.Contains(neighbour))
                     {
-                        q.Enqueue(neighbour);
+                        queue.Enqueue(neighbour);
+                        queuedPoints.Add(neighbour);
                     }
                 }
             }

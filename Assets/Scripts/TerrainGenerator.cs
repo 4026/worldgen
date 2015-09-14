@@ -46,20 +46,32 @@ public class TerrainGenerator : MonoBehaviour
 
 	public void Regenerate ()
 	{
+        float startTime = Time.realtimeSinceStartup;
+
 		MinimapController minimap = FindObjectOfType<MinimapController> ();
 
-		generateHeightmap ();
+        float stepStartTime = Time.realtimeSinceStartup;
+        generateHeightmap ();
+        Debug.Log("Generate Heightmap: " + (Time.realtimeSinceStartup - stepStartTime) + "s");
 		m_terrainData.SetHeights (0, 0, Heightmap.getValues ());
 		minimap.setHeightmap (Heightmap.getTexture ());
 
-		generateRainMap ();
-		minimap.setRainmap (Rainmap.getTexture ());
+        stepStartTime = Time.realtimeSinceStartup;
+        generateRainMap ();
+        Debug.Log("Generate Rainmap: " + (Time.realtimeSinceStartup - stepStartTime) + "s");
+        minimap.setRainmap (Rainmap.getTexture ());
 
+        stepStartTime = Time.realtimeSinceStartup;
         generateBiomeMap();
+        Debug.Log("Generate Biome map: " + (Time.realtimeSinceStartup - stepStartTime) + "s");
 
-		generateAlphamap ();
-		m_terrainData.SetAlphamaps (0, 0, m_alphamap);
-	}
+        stepStartTime = Time.realtimeSinceStartup;
+        generateAlphamap ();
+        Debug.Log("Generate Alphamap: " + (Time.realtimeSinceStartup - stepStartTime) + "s");
+        m_terrainData.SetAlphamaps (0, 0, m_alphamap);
+
+        Debug.Log("Total: " + (Time.realtimeSinceStartup - startTime) + "s");
+    }
 
     private void generateHeightmap ()
 	{
