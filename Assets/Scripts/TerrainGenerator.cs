@@ -1,5 +1,5 @@
 ﻿using UnityEngine;
-using System.Collections;
+using System.Collections.Generic;
 
 public class TerrainGenerator : MonoBehaviour
 {
@@ -70,8 +70,14 @@ public class TerrainGenerator : MonoBehaviour
         Debug.Log("Generate Alphamap: " + (Time.realtimeSinceStartup - stepStartTime) + "s");
         m_terrainData.SetAlphamaps (0, 0, m_alphamap);
 
+        stepStartTime = Time.realtimeSinceStartup;
+        placeTrees();
+        Debug.Log("Place trees: " + (Time.realtimeSinceStartup - stepStartTime) + "s");
+
+        m_terrain.Flush();
+
         Debug.Log("Total: " + (Time.realtimeSinceStartup - startTime) + "s");
-    }
+    }    
 
     private void generateHeightmap ()
 	{
@@ -82,7 +88,7 @@ public class TerrainGenerator : MonoBehaviour
 		// - Set some random heights in the middle of the map
 		for (int x = 1; x <= 3; ++x) {
 			for (int y = 1; y <= 3; ++y) {
-				map.SetSeedValue (x * quarterSize, y * quarterSize, Random.value);
+				map.SetSeedValue (x * quarterSize, y * quarterSize, UnityEngine.Random.value);
 			}
 		}
 
@@ -144,7 +150,62 @@ public class TerrainGenerator : MonoBehaviour
 		}
 	}
 
-	public Point GetHeightmapPosFromWorldPos (Vector3 worldPos)
+    private void placeTrees()
+    {
+        m_terrainData.treeInstances = new TreeInstance[0];
+
+        List<TreeInstance> treeList = new List<TreeInstance>();
+        TreeInstance tree;
+        Point heightmapPosition;
+        BiomeMapPixel biomeData;
+        BiomeType biome;
+        int prototypeIndex;
+        Vector3 position;
+        float scale;
+
+        for (int i = 0; i < 50000; ++i)
+        {
+            heightmapPosition = new Point(Random.Range(0, Heightmap.size), Random.Range(0, Heightmap.size));
+            biomeData = BiomeMap.GetPixelAtPoint(heightmapPosition);
+            biome = biomeData.GetPrimaryBiome();
+
+            if (biome == BiomeType.Forest)
+            {
+                prototypeIndex = 0;
+                scale = Random.Range(0.1f, 0.2f) * biomeData.GetBiomeWeight(biome);
+            }
+            else if (biome == BiomeType.Taiga)
+            {
+                prototypeIndex = 1;
+                scale = Random.Range(0.1f, 0.2f) * biomeData.GetBiomeWeight(biome);
+            }
+            else if (biome == BiomeType.Jungle)
+            {
+                prototypeIndex = 2;
+                scale = Random.Range(0.3f, 0.4f) * biomeData.GetBiomeWeight(biome);
+            }
+            else
+            {
+                continue;
+            }
+
+            tree = new TreeInstance();
+            tree.prototypeIndex = prototypeIndex;
+            tree.heightScale = scale;
+            tree.widthScale = scale;
+            tree.rotation = Random.Range(0f, 2 * Mathf.PI);
+
+            position = new Vector3(heightmapPosition.x / (float)Heightmap.size, 0f, heightmapPosition.y / (float)Heightmap.size);
+            position.y = m_terrainData.GetInterpolatedHeight(position.x, position.z) / m_terrainData.size.y;
+            tree.position = position;
+
+            treeList.Add(tree);
+        }
+
+        m_terrainData.treeInstances = treeList.ToArray();
+    }
+
+    public Point GetHeightmapPosFromWorldPos (Vector3 worldPos)
 	{
 		Vector3 localPos = worldPos - transform.position;
 		return new Point (

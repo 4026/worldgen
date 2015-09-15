@@ -90,7 +90,7 @@ public class BiomeMap
     {
         float heightAboveSeaLevel = m_terrainData.getHeightAboveSeaLevelAt(position);
         float latitude = Mathf.Clamp(position.y / (float) m_terrainData.Heightmap.size, 0f, 1f);
-        float temperature = (4 * latitude + 1 - Mathf.Clamp(heightAboveSeaLevel, 0f, 1f)) / 5f;
+        float temperature = latitude * (1 - Mathf.Clamp(heightAboveSeaLevel, 0f, 1f));
 
         float precipitation = m_terrainData.Rainmap.getValueAt(position);
 
