@@ -1,102 +1,112 @@
 ﻿using System;
 using System.Collections.Generic;
 
-public class BiomeNamer
+namespace Biomes
 {
-    /// <summary>
-    /// The sole instance of this singleton class.
-    /// </summary>
-    /// <value>The instance.</value>
-    public static BiomeNamer Instance
+    public class BiomeNamer
     {
-        get
+        /// <summary>
+        /// The sole instance of this singleton class.
+        /// </summary>
+        /// <value>The instance.</value>
+        public static BiomeNamer Instance
         {
-            if (_instance == null)
+            get
             {
-                _instance = new BiomeNamer();
+                if (_instance == null)
+                {
+                    _instance = new BiomeNamer();
+                }
+                return _instance;
             }
-            return _instance;
         }
-    }
-    private static BiomeNamer _instance = null;
+        private static BiomeNamer _instance = null;
 
-    /// <summary>
-    /// Biome name definitions, as an array mapping biome types to lists of strings.
-    /// </summary>
-    private List<string>[] m_biomeNameDefinitions;
+        /// <summary>
+        /// Biome name definitions, as an array mapping biome types to lists of strings.
+        /// </summary>
+        private List<string>[] m_biomeNameDefinitions;
 
-    private readonly char[] vowels = new char[] { 'a', 'e', 'i', 'o', 'u' };
-    private readonly char[] consonants = new char[] { 'b', 'c', 'd', 'f', 'g', 'h', 'j','k', 'l', 'm', 'n','p', 'q', 'r', 's', 't', 'v', 'w', 'x', 'y', 'z' };
+        private readonly string[] vowels = new string[] { "a", "e", "i", "o", "u" };
+        private readonly string[] consonants = new string[] { "b", "c", "d", "f", "g", "h", "j", "k", "l", "m", "n", "p", "qu", "r", "s", "t", "v", "w", "x", "y", "z" };
+        private readonly string[] bigrams = new string[] { "th", "he", "in", "er", "an", "re", "on", "at", "en", "nd", "ti", "es", "or", "te", "of", "ed", "is", "it", "al", "ar", "st", "to", "nt", "ng", "se", "ha", "as", "ou", "io", "le", "ve", "co", "me", "de", "hi", "ri", "ro", "ic", "ne", "ea", "ra", "ce", "li", "ch", "ll", "be", "ma", "si", "om", "ur" };
 
-    private BiomeNamer()
-    {
-        //Initialise the biome name definitions
-        m_biomeNameDefinitions = new List < string >[Enum.GetValues(typeof(BiomeType)).Length];
-        foreach (BiomeType biome in Enum.GetValues(typeof(BiomeType)))
+        private BiomeNamer()
         {
-            m_biomeNameDefinitions[(int) biome] = new List<string>();
+            
         }
 
-        //Ocean
-        m_biomeNameDefinitions[(int)BiomeType.Ocean].AddRange(new string[] {
-            "Ocean", "Sea"
-        });
-
-        //Plains
-        m_biomeNameDefinitions[(int)BiomeType.Plains].AddRange(new string[] {
-            "Plain", "Steppe", "Grassland", "Prairie"
-        });
-
-        //Desert
-        m_biomeNameDefinitions[(int)BiomeType.Desert].AddRange(new string[] {
-            "Desert", "Sands", "Dunes"
-        });
-
-        //Cold Desert
-        m_biomeNameDefinitions[(int)BiomeType.ColdDesert].AddRange(new string[] {
-            "Desert", "Wastes", "Plain"
-        });
-
-        //Swamp
-        m_biomeNameDefinitions[(int)BiomeType.Swamp].AddRange(new string[] {
-            "Swamp", "Bog", "Marsh", "Wetlands"
-        });
-
-        //Snow
-        m_biomeNameDefinitions[(int)BiomeType.Snow].AddRange(new string[] {
-            "Glacier", "Drifts", "Plain", "Ice Shelf"
-        });
-
-        //Forest
-        m_biomeNameDefinitions[(int)BiomeType.Forest].AddRange(new string[] {
-            "Forest", "Wood"
-        });
-
-        //Cold Forest
-        m_biomeNameDefinitions[(int)BiomeType.Taiga].AddRange(new string[] {
-            "Forest", "Wood", "Pines", "Taiga"
-        });
-
-        //Hot Forest
-        m_biomeNameDefinitions[(int)BiomeType.Jungle].AddRange(new string[] {
-            "Jungle", "Rainforest"
-        });
-    }
-
-    public string GenerateName(BiomeType biome)
-    {
-        string name = "The " + char.ToUpper(consonants[UnityEngine.Random.Range(0, 21)]).ToString();
-        int nameLength = UnityEngine.Random.Range(1, 5);
-        for (int i = 0; i < nameLength; ++i)
+        public string GenerateName(Biome biome)
         {
-            name += vowels[UnityEngine.Random.Range(0, 5)];
-            name += consonants[UnityEngine.Random.Range(0, 21)];
+            BiomeData biomeData = BiomeDatabase.Instance.Get(biome.Type);
+
+            return "The " + firstCharToUpper(generateRandomString()) + " " + generateBiomeTypeName(biome, biomeData);
         }
 
-        List<string> names = m_biomeNameDefinitions[(int)biome];
-        int nameIndex = UnityEngine.Random.Range(0, names.Count);
-        name += " " + names[nameIndex];
+        private string generateRandomString()
+        {
+            string output = "";
+            int nameLength = UnityEngine.Random.Range(2, 6);
+            for (int i = 0; i < nameLength; ++i)
+            {
+                int mode = UnityEngine.Random.Range(0, 3);
 
-        return name;
+                switch (mode)
+                {
+                    case 0:
+                        output += consonants[UnityEngine.Random.Range(0, consonants.Length)];
+                        output += vowels[UnityEngine.Random.Range(0, vowels.Length)];
+                        break;
+                    case 1:
+                        output += bigrams[UnityEngine.Random.Range(0, bigrams.Length)];
+                        break;
+                    case 2:
+                        output += consonants[UnityEngine.Random.Range(0, consonants.Length)];
+                        break;
+                }
+                
+            }
+
+            return output;
+        }
+
+        private string generateBiomeTypeName(Biome biome, BiomeData biomeData)
+        {
+            string[] names;
+            if (biome.Size > 10000)
+            {
+                //Large biome
+                names = biomeData.BigNames;
+            }
+            else if (biome.Size > 1000)
+            {
+                //Medium biome
+                names = biomeData.MediumNames;
+            }
+            else
+            {
+                //Small biome
+                names = biomeData.SmallNames;
+            }
+
+            int nameIndex = UnityEngine.Random.Range(0, names.Length);
+            return names[nameIndex];
+        }
+
+        private static string firstCharToUpper(string str)
+        {
+            if (str == null)
+            {
+                return null;
+            }
+
+            if (str.Length > 1)
+            {
+                return char.ToUpper(str[0]) + str.Substring(1);
+            }
+
+            return str.ToUpper();
+        }
+
     }
 }

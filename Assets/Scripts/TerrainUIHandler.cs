@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.EventSystems;
-using System.Collections;
+using Biomes;
 
 public class TerrainUIHandler : MonoBehaviour, IScrollHandler, IPointerClickHandler
 {

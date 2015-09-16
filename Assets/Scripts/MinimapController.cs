@@ -1,5 +1,5 @@
 ﻿using UnityEngine;
-using System.Collections;
+using Biomes;
 
 public class MinimapController : MonoBehaviour
 {
@@ -20,18 +20,24 @@ public class MinimapController : MonoBehaviour
 
 	void Awake ()
 	{
-		m_biomeGraph = new Texture2D (128, 128);
+
+
+		m_biomeGraph = new Texture2D (size, size);
 		Color[] pixels = m_biomeGraph.GetPixels ();
 		for (int x = 0; x < m_biomeGraph.width; ++x) {
 			for (int y = 0; y < m_biomeGraph.height; ++y) {
 				float temperature = x / (float)m_biomeGraph.width;
 				float precipitation = y / (float)m_biomeGraph.height;
 				float[] biomeWeights = BiomeCalculator.Instance.getBiomeWeights (temperature, precipitation, 1f);
-				pixels [y * m_biomeGraph.width + x] = new Color (
-					biomeWeights [(int)BiomeType.Desert],
-					biomeWeights [(int)BiomeType.Plains], 
-					biomeWeights [(int)BiomeType.Snow]
-				);
+
+                BiomeType[] allBiomes = System.Enum.GetValues(typeof(BiomeType)) as BiomeType[];
+                Color pixel = new Color(0f, 0f, 0f, 0f);
+                foreach (BiomeType biome in allBiomes)
+                {
+                    pixel += BiomeDatabase.Instance.Get(biome).MinimapColor * biomeWeights[(int) biome];
+                }
+
+                pixels [y * m_biomeGraph.width + x] = pixel;
 			}
 		}
 

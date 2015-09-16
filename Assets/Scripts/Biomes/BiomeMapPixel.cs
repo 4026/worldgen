@@ -1,59 +1,75 @@
 using System;
 
-public class BiomeMapPixel
+namespace Biomes
 {
-	private float[] m_biomeWeights;
-	public Biome ParentBiome { get; set; }
-
-	public BiomeMapPixel (float[] biomeWeights)
-	{
-		m_biomeWeights = biomeWeights;
-	}
-
-    /// <summary>
-    /// Get the biome type with the greatest weight in this pixel.
-    /// </summary>
-    /// <returns></returns>
-    public BiomeType GetPrimaryBiome()
+    public class BiomeMapPixel
     {
-        float weight;
-        float maxWeight = 0f;
-        BiomeType primaryBiomeType = BiomeType.Plains;
-        
-        foreach (BiomeType biome in Enum.GetValues(typeof(BiomeType)))
+        private float[] m_biomeWeights;
+        public Biome ParentBiome { get; set; }
+
+        public BiomeMapPixel(float[] biomeWeights)
         {
-            weight = GetBiomeWeight(biome);
-            if (weight > maxWeight)
-            {
-                primaryBiomeType = biome;
-                maxWeight = weight;
-            }
+            m_biomeWeights = biomeWeights;
         }
 
-        return primaryBiomeType;
-    }
-
-    /// <summary>
-    /// Get the weight of the specified biome type in this pixel.
-    /// </summary>
-    /// <param name="biome"></param>
-    /// <returns></returns>
-	public float GetBiomeWeight (BiomeType biome)
-	{
-		return m_biomeWeights [(int)biome];
-	}
-
-    public override string ToString()
-    {
-        string biomeData = "";
-        foreach (BiomeType biome in Enum.GetValues(typeof(BiomeType)))
+        /// <summary>
+        /// Get the biome type with the greatest weight in this pixel.
+        /// </summary>
+        /// <returns></returns>
+        public BiomeType GetPrimaryBiome()
         {
-            if (GetBiomeWeight(biome) != 0)
+            float weight;
+            float maxWeight = 0f;
+            BiomeType primaryBiomeType = BiomeType.Plains;
+
+            foreach (BiomeType biome in Enum.GetValues(typeof(BiomeType)))
             {
-                biomeData += String.Format("{0}: {1:f2}, ", biome.ToString(), GetBiomeWeight(biome));
+                weight = GetBiomeWeight(biome);
+                if (weight > maxWeight)
+                {
+                    primaryBiomeType = biome;
+                    maxWeight = weight;
+                }
             }
+
+            return primaryBiomeType;
         }
 
-        return ParentBiome.Name + " (" + biomeData + ")";
+        /// <summary>
+        /// Get the weight of the specified biome type in this pixel.
+        /// </summary>
+        /// <param name="biome"></param>
+        /// <returns></returns>
+        public float GetBiomeWeight(BiomeType biome)
+        {
+            return m_biomeWeights[(int)biome];
+        }
+
+        /// <summary>
+        /// Get a string representation of the Biome.
+        /// </summary>
+        /// <returns></returns>
+        public override string ToString()
+        {
+            string biomeData = "";
+            foreach (BiomeType biome in Enum.GetValues(typeof(BiomeType)))
+            {
+                if (GetBiomeWeight(biome) != 0)
+                {
+                    biomeData += String.Format("{0}: {1:f2}, ", biome.ToString(), GetBiomeWeight(biome));
+                }
+            }
+
+            if (ParentBiome != null)
+            {
+                return ParentBiome.Name + " (Area: " + ParentBiome.Size + "), Weights: " + biomeData;
+            }
+            else
+            {
+                return "Weights: " + biomeData;
+            }
+
+
+        }
     }
 }
