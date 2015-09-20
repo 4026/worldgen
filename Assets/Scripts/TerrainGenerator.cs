@@ -206,8 +206,8 @@ public class TerrainGenerator : MonoBehaviour
     /// </summary>
     /// <param name="pos"></param>
     /// <returns></returns>
-    public float getHeightAboveSeaLevelAt(Point pos)
+    public float GetHeightAboveSeaLevelAt(Point pos)
     {
-        return Mathf.Clamp((Heightmap.getValueAt(pos) - SeaLevel) / (1 - SeaLevel), -1f, 1f);
+        return Mathf.Clamp((Heightmap.GetValueAt(pos) - SeaLevel) / (1 - SeaLevel), -1f, 1f);
     }
 }

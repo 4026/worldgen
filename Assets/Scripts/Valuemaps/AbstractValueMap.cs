@@ -30,7 +30,7 @@ public abstract class AbstractValueMap
 		return m_values [y, x];
 	}
 
-    public float getValueAt(Point pos)
+    public float GetValueAt(Point pos)
     {
         return m_values[pos.y, pos.x];
     }

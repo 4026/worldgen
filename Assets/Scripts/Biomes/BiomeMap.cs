@@ -24,13 +24,16 @@ namespace Biomes
                 for (int y = 0; y < Size; ++y)
                 {
                     position = new Point(x, y);
-                    m_data[y, x] = new BiomeMapPixel(CalculateBiomeWeightsAtPoint(position));
+
+                    float heightAboveSeaLevel = m_terrainData.GetHeightAboveSeaLevelAt(position);
+                    float latitude = Mathf.Clamp(position.y / (float)m_terrainData.Heightmap.size, 0f, 1f);
+                    float precipitation = m_terrainData.Rainmap.GetValueAt(position);
+
+                    m_data[y, x] = new BiomeMapPixel(latitude, heightAboveSeaLevel, precipitation);
                 }
             }
 
             //Iterate through all pixels, setting their parent Biome
-
-            Biome biome;
             for (int x = 0; x < Size; ++x)
             {
                 for (int y = 0; y < Size; ++y)
@@ -42,7 +45,7 @@ namespace Biomes
                     }
 
                     //Generate a new Biome object from the primary biome type of this pixel.
-                    biome = new Biome(m_data[y, x].GetPrimaryBiome());
+                    Biome biome = new Biome(m_data[y, x].GetPrimaryBiome());
 
                     //Flood fill the map with that biome.
                     floodFill(new Point(x, y), biome);
@@ -92,17 +95,5 @@ namespace Biomes
         {
             return m_data[point.y, point.x];
         }
-
-        private float[] CalculateBiomeWeightsAtPoint(Point position)
-        {
-            float heightAboveSeaLevel = m_terrainData.getHeightAboveSeaLevelAt(position);
-            float latitude = Mathf.Clamp(position.y / (float)m_terrainData.Heightmap.size, 0f, 1f);
-            float temperature = latitude * (1 - Mathf.Clamp(heightAboveSeaLevel, 0f, 1f));
-
-            float precipitation = m_terrainData.Rainmap.getValueAt(position);
-
-            return BiomeCalculator.Instance.getBiomeWeights(temperature, precipitation, heightAboveSeaLevel);
-        }
-
     }
 }

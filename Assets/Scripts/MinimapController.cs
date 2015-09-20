@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using Biomes;
+using System.IO;
 
 public class MinimapController : MonoBehaviour
 {
@@ -28,7 +29,7 @@ public class MinimapController : MonoBehaviour
 			for (int y = 0; y < m_biomeGraph.height; ++y) {
 				float temperature = x / (float)m_biomeGraph.width;
 				float precipitation = y / (float)m_biomeGraph.height;
-				float[] biomeWeights = BiomeCalculator.Instance.getBiomeWeights (temperature, precipitation, 1f);
+				float[] biomeWeights = BiomeCalculator.Instance.GetBiomeWeights (temperature, precipitation, 1f);
 
                 BiomeType[] allBiomes = System.Enum.GetValues(typeof(BiomeType)) as BiomeType[];
                 Color pixel = new Color(0f, 0f, 0f, 0f);
@@ -38,12 +39,16 @@ public class MinimapController : MonoBehaviour
                 }
 
                 pixels [y * m_biomeGraph.width + x] = pixel;
-			}
+            }
 		}
 
 		m_biomeGraph.SetPixels (pixels);
 		m_biomeGraph.Apply ();
-	}
+
+        //Also, write out the biome map to a png file for reference.
+        byte[] outfile = m_biomeGraph.EncodeToPNG();
+        File.WriteAllBytes(Application.dataPath + "/../BiomeMap.png", outfile);
+    }
 	
 	void OnGUI ()
 	{

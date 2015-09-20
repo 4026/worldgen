@@ -4,12 +4,22 @@ namespace Biomes
 {
     public class BiomeMapPixel
     {
+
+        public readonly float Latitude;
+        public readonly float HeightAboveSeaLevel;
+        public readonly float Temperature;
+        public readonly float Precipitation;
+
         private float[] m_biomeWeights;
         public Biome ParentBiome { get; set; }
 
-        public BiomeMapPixel(float[] biomeWeights)
+        public BiomeMapPixel(float newLatitude, float newHeightAboveSeaLevel, float newPrecipitation)
         {
-            m_biomeWeights = biomeWeights;
+            Latitude = newLatitude;
+            HeightAboveSeaLevel = newHeightAboveSeaLevel;
+            Precipitation = newPrecipitation;
+            Temperature = BiomeCalculator.Instance.GetTemperature(Latitude, HeightAboveSeaLevel);
+            m_biomeWeights = BiomeCalculator.Instance.GetBiomeWeights(Temperature, Precipitation, HeightAboveSeaLevel);
         }
 
         /// <summary>
@@ -51,25 +61,20 @@ namespace Biomes
         /// <returns></returns>
         public override string ToString()
         {
-            string biomeData = "";
+            string parentBiomeString = (ParentBiome != null) ? ParentBiome.Name + " (Area: " + ParentBiome.Size + ")" : "Unnamed Area";
+
+            string locationDataString = String.Format("Latitude: {0:f3}, Altitude: {1:f3}, Temperature: {2:f3}, Precipitation: {3:f3}", Latitude, HeightAboveSeaLevel, Temperature, Precipitation);
+
+            string biomeWeightsString = "";
             foreach (BiomeType biome in Enum.GetValues(typeof(BiomeType)))
             {
                 if (GetBiomeWeight(biome) != 0)
                 {
-                    biomeData += String.Format("{0}: {1:f2}, ", biome.ToString(), GetBiomeWeight(biome));
+                    biomeWeightsString += String.Format("{0}: {1:f2}, ", biome.ToString(), GetBiomeWeight(biome));
                 }
             }
 
-            if (ParentBiome != null)
-            {
-                return ParentBiome.Name + " (Area: " + ParentBiome.Size + "), Weights: " + biomeData;
-            }
-            else
-            {
-                return "Weights: " + biomeData;
-            }
-
-
+            return String.Format("{0} - {1} - {2}", parentBiomeString, locationDataString, biomeWeightsString);
         }
     }
 }

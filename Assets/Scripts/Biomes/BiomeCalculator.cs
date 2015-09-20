@@ -30,14 +30,29 @@ namespace Biomes
         private BiomeCalculator()
         {
             //Initialise the biome definitions
-            m_biomeDefinitions = new BiomeType[6, 6] {
-            {BiomeType.Snow, BiomeType.Snow, BiomeType.Snow, BiomeType.Snow, BiomeType.Snow, BiomeType.Snow},
-            {BiomeType.Snow, BiomeType.Taiga, BiomeType.Taiga, BiomeType.Taiga, BiomeType.Taiga, BiomeType.Taiga},
-            {BiomeType.ColdDesert,BiomeType.ColdDesert,BiomeType.Plains,BiomeType.Forest,BiomeType.Forest,BiomeType.Swamp},
-            {BiomeType.ColdDesert, BiomeType.ColdDesert, BiomeType.Plains, BiomeType.Forest, BiomeType.Forest, BiomeType.Swamp},
-            {BiomeType.Desert, BiomeType.Desert, BiomeType.Plains, BiomeType.Forest, BiomeType.Forest, BiomeType.Swamp},
-            {BiomeType.Desert, BiomeType.Desert, BiomeType.Plains, BiomeType.Jungle, BiomeType.Jungle, BiomeType.Jungle}
-        };
+            m_biomeDefinitions = new BiomeType[10, 10] {
+                {BiomeType.Snow, BiomeType.Snow, BiomeType.Snow, BiomeType.Snow, BiomeType.Snow, BiomeType.Snow, BiomeType.Snow, BiomeType.Snow, BiomeType.Snow, BiomeType.Snow},
+                {BiomeType.Snow, BiomeType.Snow, BiomeType.Snow, BiomeType.Snow, BiomeType.Snow, BiomeType.Snow, BiomeType.Snow, BiomeType.Snow, BiomeType.Snow, BiomeType.Snow},
+                {BiomeType.ColdDesert,BiomeType.ColdDesert, BiomeType.Plains,BiomeType.Plains, BiomeType.Taiga, BiomeType.Taiga, BiomeType.Taiga, BiomeType.Taiga, BiomeType.Taiga, BiomeType.Taiga},
+                {BiomeType.ColdDesert,BiomeType.ColdDesert, BiomeType.Plains,BiomeType.Plains, BiomeType.Taiga, BiomeType.Taiga, BiomeType.Taiga, BiomeType.Taiga, BiomeType.Taiga, BiomeType.Taiga},
+                {BiomeType.ColdDesert,BiomeType.ColdDesert, BiomeType.Plains,BiomeType.Plains, BiomeType.Forest, BiomeType.Forest, BiomeType.Forest, BiomeType.Forest, BiomeType.Swamp, BiomeType.Swamp},
+                {BiomeType.Desert,BiomeType.Desert, BiomeType.Plains,BiomeType.Plains, BiomeType.Forest, BiomeType.Forest, BiomeType.Forest, BiomeType.Forest, BiomeType.Swamp, BiomeType.Swamp},
+                {BiomeType.Desert,BiomeType.Desert, BiomeType.Plains,BiomeType.Plains, BiomeType.Forest, BiomeType.Forest, BiomeType.Forest, BiomeType.Forest, BiomeType.Swamp, BiomeType.Swamp},
+                {BiomeType.Desert,BiomeType.Desert, BiomeType.Plains,BiomeType.Plains, BiomeType.Forest, BiomeType.Forest, BiomeType.Forest, BiomeType.Forest, BiomeType.Swamp, BiomeType.Swamp},
+                {BiomeType.Desert,BiomeType.Desert, BiomeType.Plains,BiomeType.Plains, BiomeType.Jungle, BiomeType.Jungle, BiomeType.Jungle, BiomeType.Jungle, BiomeType.Jungle, BiomeType.Jungle},
+                {BiomeType.Desert,BiomeType.Desert, BiomeType.Plains,BiomeType.Plains, BiomeType.Jungle, BiomeType.Jungle, BiomeType.Jungle, BiomeType.Jungle, BiomeType.Jungle, BiomeType.Jungle},
+            };
+        }
+
+        public float GetTemperature(float latitude, float heightAboveSeaLevel)
+        {
+            //Force height above sea level to be positive.
+            heightAboveSeaLevel = Mathf.Clamp(heightAboveSeaLevel, 0f, 1f);
+
+            //Make latitude affect temperature on a steeper gradient centered on the middle of the map.
+            latitude = Mathf.Clamp(2 * latitude - 0.5f, 0f, 1f);
+
+            return ((3 * latitude) + (1 - heightAboveSeaLevel)) / 4f;
         }
 
         /// <summary>
@@ -46,8 +61,8 @@ namespace Biomes
         /// <returns>An array of values, totalling one, that correspond to the weights for each biome type for the given parameters.</returns>
         /// <param name="temperature">Temperature.</param>
         /// <param name="precipitation">Precipitation.</param>
-        /// <param name="heightAboveSealevel">Height above sea level.</param>
-        public float[] getBiomeWeights(float temperature, float precipitation, float heightAboveSealevel)
+        /// <param name="heightAboveSeaLevel">Height above sea level.</param>
+        public float[] GetBiomeWeights(float temperature, float precipitation, float heightAboveSeaLevel)
         {
             //Get the values of the parameters as they map to the dimenstions of our definitions array.
             float normalisedTemperature = temperature * (m_biomeDefinitions.GetLength(0) - 1);
@@ -77,9 +92,9 @@ namespace Biomes
             biomeWeights[(int)biome11] += normalisedTemperatureOffset * normalisedPrecipitationOffset;
 
             //If we're close to the sea, start fading in the ocean biome.
-            if (heightAboveSealevel < 0.02f)
+            if (heightAboveSeaLevel < 0.02f)
             {
-                float t = Mathf.Clamp(heightAboveSealevel / 0.02f, 0f, 1f);
+                float t = Mathf.Clamp(heightAboveSeaLevel / 0.02f, 0f, 1f);
                 float[] oceanWeights = getFullWeightBiome(BiomeType.Ocean);
                 biomeWeights = lerpWeights(oceanWeights, biomeWeights, t);
             }
