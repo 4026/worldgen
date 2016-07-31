@@ -114,6 +114,11 @@ public class CameraController : MonoBehaviour
 	/// </summary>
 	private void zoomUpdate ()
 	{
+        if (Input.mouseScrollDelta.y != 0)
+        {
+            ZoomIn(Input.mouseScrollDelta.y);
+        }
+
 		if (m_zoomT < 1) {
 			// Calculate the fraction of the zoom animation to play this frame.
 			float t0 = m_zoomT;
