@@ -90,12 +90,14 @@ public class CameraController : MonoBehaviour
 			//Begin panning on MMB down
 			m_panning = true;
 			Cursor.lockState = CursorLockMode.Locked;
-		} 
+            Cursor.visible = false;
+        } 
 
 		if (Input.GetMouseButtonUp (2)) {
 			//End panning on MMB up
 			m_panning = false;
 			Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
 		}
 
 		if (m_panning) {
