@@ -139,8 +139,11 @@ public class CameraController : MonoBehaviour
 
 		//Add the two vectors to get the total new zoom vector to apply, but ensure that it cannot cause the camera to move beyond its Y limits.
 		m_zoomVector = newZoomVector + zoomRemainder;
-		float permittedDeltaY = Mathf.Clamp (m_zoomVector.y, MinY - transform.position.y, MaxY - transform.position.y);
-		m_zoomVector *= permittedDeltaY / m_zoomVector.y;
+        if (m_zoomVector.y != 0)
+        {
+            float permittedDeltaY = Mathf.Clamp(m_zoomVector.y, MinY - transform.position.y, MaxY - transform.position.y);
+            m_zoomVector *= permittedDeltaY / m_zoomVector.y;
+        }
 
 		//Reset the animation's progress
 		m_zoomT = 0;
