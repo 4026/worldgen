@@ -61,9 +61,24 @@ namespace Biomes
         /// <returns></returns>
         public override string ToString()
         {
-            string parentBiomeString = (ParentBiome != null) ? ParentBiome.Name + " (Area: " + ParentBiome.Size + ")" : "Unnamed Area";
+            string parentBiomeString;
+            if (ParentBiome != null)
+            {
+                parentBiomeString = String.Format("{0} (Area: {1:N0})", ParentBiome.Name, ParentBiome.Size);
+            }
+            else
+            {
+                parentBiomeString = "Unnamed Area";
+            }
 
-            string locationDataString = String.Format("Latitude: {0:f3}, Altitude: {1:f3}, Temperature: {2:f3}, Precipitation: {3:f3}", Latitude, HeightAboveSeaLevel, Temperature, Precipitation);
+            string locationDataString = String.Format(
+                "Latitude: {1:f3}{0}Altitude: {2:f3}{0}Temperature: {3:f3}{0}Precipitation: {4:f3}", 
+                Environment.NewLine,
+                Latitude, 
+                HeightAboveSeaLevel, 
+                Temperature, 
+                Precipitation
+            );
 
             string biomeWeightsString = "";
             foreach (BiomeType biome in Enum.GetValues(typeof(BiomeType)))
@@ -74,7 +89,13 @@ namespace Biomes
                 }
             }
 
-            return String.Format("{0} - {1} - {2}", parentBiomeString, locationDataString, biomeWeightsString);
+            return String.Format(
+                "{1}{0}{2}{0}{3}", 
+                Environment.NewLine + Environment.NewLine, 
+                parentBiomeString, 
+                locationDataString, 
+                biomeWeightsString
+            );
         }
     }
 }

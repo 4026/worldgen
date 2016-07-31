@@ -1,29 +1,44 @@
 ﻿using UnityEngine;
 using Biomes;
 using System.IO;
+using UnityEngine.UI;
+using System;
 
 public class MinimapController : MonoBehaviour
 {
 	public enum MinimapMode
 	{
-		Off,
-		BiomeGraph,
 		Heightmap,
-		Rainmap
-	}
+		Rainmap,
+        BiomeGraph
+    }
 
-	public MinimapMode CurrentMode = MinimapMode.Off;
-	public int size;
+    /// <summary>
+    /// The size of texture to generate
+    /// </summary>
+    public int Size;
 
-	private Texture2D m_heightmap;
+    private MinimapMode m_currentMode;
+    public MinimapMode CurrentMode {
+        get { return m_currentMode; }
+        set {
+            m_currentMode = value;
+            updateDisplay();
+        }
+    }
+
+    private Texture2D m_heightmap;
 	private Texture2D m_rainmap;
 	private Texture2D m_biomeGraph;
 
+    private RawImage m_rawImage;
+
 	void Awake ()
 	{
+        m_rawImage = this.GetComponent<RawImage>();
 
-
-		m_biomeGraph = new Texture2D (size, size);
+        //Draw and save the biome graph texture immediately, as it doesn't depend upon any generated data.
+        m_biomeGraph = new Texture2D (Size, Size);
 		Color[] pixels = m_biomeGraph.GetPixels ();
 		for (int x = 0; x < m_biomeGraph.width; ++x) {
 			for (int y = 0; y < m_biomeGraph.height; ++y) {
@@ -49,29 +64,47 @@ public class MinimapController : MonoBehaviour
         byte[] outfile = m_biomeGraph.EncodeToPNG();
         File.WriteAllBytes(Application.dataPath + "/../BiomeMap.png", outfile);
     }
-	
-	void OnGUI ()
-	{
-		switch (CurrentMode) {
-		case MinimapMode.BiomeGraph:
-			GUI.DrawTexture (new Rect (10, 10, 10 + size, 10 + size), m_biomeGraph, ScaleMode.ScaleToFit);
-			break;
-		case MinimapMode.Heightmap:
-			GUI.DrawTexture (new Rect (10, 10, 10 + size, 10 + size), m_heightmap, ScaleMode.ScaleToFit);
-			break;
-		case MinimapMode.Rainmap:
-			GUI.DrawTexture (new Rect (10, 10, 10 + size, 10 + size), m_rainmap, ScaleMode.ScaleToFit);
-			break;
-		}
-	}
+
+    public void Start()
+    {
+        this.CurrentMode = MinimapMode.Heightmap;
+    }
+
+    public void setModeFromDropdown (int option_index)
+    {
+        CurrentMode = (MinimapMode) System.Enum.GetValues(typeof(MinimapMode)).GetValue(option_index);
+    }
+
 
 	public void setHeightmap (Texture2D heightmap)
 	{
 		m_heightmap = heightmap;
+        updateDisplay();
 	}
 
 	public void setRainmap (Texture2D rainmap)
 	{
 		m_rainmap = rainmap;
-	}
+        updateDisplay();
+    }
+
+    /// <summary>
+    /// Update this GameObject's RawImage component to show the correct minimap texture.
+    /// </summary>
+    private void updateDisplay()
+    {
+        switch (m_currentMode)
+        {
+            case MinimapMode.Heightmap:
+                m_rawImage.texture = m_heightmap;
+                break;
+            case MinimapMode.Rainmap:
+                m_rawImage.texture = m_rainmap;
+                break;
+            case MinimapMode.BiomeGraph:
+                m_rawImage.texture = m_biomeGraph;
+                break;
+        }
+        
+    }
 }

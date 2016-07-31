@@ -1,9 +1,18 @@
 ﻿using UnityEngine;
 using UnityEngine.EventSystems;
 using Biomes;
+using UnityEngine.UI;
+using System;
 
 public class TerrainUIHandler : MonoBehaviour, IScrollHandler, IPointerClickHandler
 {
+    Text m_locationText;
+
+    public void Start()
+    {
+        m_locationText = GameObject.Find("LocationText").GetComponent<Text>();
+    }
+
 	/// <summary>
 	/// Called when the pointer clicks on the terrain.
 	/// </summary>
@@ -13,7 +22,8 @@ public class TerrainUIHandler : MonoBehaviour, IScrollHandler, IPointerClickHand
 		TerrainGenerator generator = GetComponent<TerrainGenerator> ();
 		Point heightmapPos = generator.GetHeightmapPosFromWorldPos (eventData.pointerCurrentRaycast.worldPosition);
 		BiomeMapPixel biomeData = generator.BiomeMap.GetPixelAtPoint(heightmapPos);
-		Debug.Log (heightmapPos + " - " + biomeData);
+
+        m_locationText.text = heightmapPos + Environment.NewLine + biomeData;
 	}
 
 	/// <summary>
